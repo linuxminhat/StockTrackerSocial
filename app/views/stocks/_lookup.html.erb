@@ -1,0 +1,44 @@
+<div id="stock-lookup">
+  <%= form_tag search_stocks_path, remote: true, method: :get, id: 'stock-lookup-form' do %>
+    <div class="form-group row no-padding text-center">
+      <div class="col-sm-4">
+        <%= text_field_tag :stock, params[:stock], placeholder: 'Stock ticker symbol', autofocus: true,
+            class: 'form-control search-box imput-lg' %>
+      </div>
+      <div class="col-sm-2">
+        <%= button_tag type: :submit, class: 'btn btn-success' do %>
+          <i class="fa fa-search"></i> Look up a stock
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%= render 'common/spinner' %>
+
+  <% if @stock %>
+    <div id="stock-lookup-results" class="well results-block">
+      <strong>Symbol: </strong><%= @stock.ticker %>
+      <strong>Name: </strong><%= @stock.name %>
+      <strong>Price: </strong><%= @stock.price %>
+
+      <% if current_user.can_add_stock? @stock.ticker %>
+        <%= link_to 'Add to my stocks',
+                    user_stocks_path(user: current_user, stock_ticker: @stock.ticker,
+                                     stock_id: @stock.id ? @stock.id : ''),
+                    method: :post, class: 'btn btn-xs btn-success' %>
+      <% else %>
+        <h4><span class="label label-warning">
+          The stock cannot be tracked because you have already added
+
+          <% if current_user.stock_already_added? @stock.ticker %>
+            this stock.
+          <% elsif !current_user.under_stock_limit? %>
+            10 stocks.
+          <% end %>
+        </span></h4>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div id="stock-lookup-errors"></div>
+</div>
